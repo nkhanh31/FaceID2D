@@ -25,7 +25,8 @@ jobs:
     - name: Build Package
       run: |
         export THEOS=/opt/theos
-        make clean package THEOS_PACKAGE_SCHEME=roothide
+        export THEOS_MAKEFILE_PATH=/opt/theos/makefiles
+        make clean package THEOS=/opt/theos THEOS_PACKAGE_SCHEME=roothide
 
     - name: Upload .deb Artifact
       uses: actions/upload-artifact@v4
