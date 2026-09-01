@@ -3,35 +3,29 @@ name: Build FaceID2D Tweak
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch:
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
       with:
         submodules: recursive
 
-    - name: Install Dependencies
-      run: |
-        brew install ldid
-
-    - name: Setup Theos & iOS SDKs
-      run: |
-        git clone --recursive https://github.com/theos/theos.git $HOME/theos
-        rm -rf $HOME/theos/sdks
-        git clone https://github.com/theos/sdks.git $HOME/theos/sdks
-        echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+    - name: Setup Theos
+      uses: howett/github-action-setup-theos@v1
 
     - name: Build Package
       run: |
-        make clean package THEOS_PACKAGE_SCHEME=rootless
+        export THEOS=$THEOS
+        make clean package THEOS_PACKAGE_SCHEME=roothide
 
     - name: Upload .deb Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: FaceID2D-deb
         path: packages/*.deb
