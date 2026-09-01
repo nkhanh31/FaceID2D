@@ -19,15 +19,12 @@ jobs:
     - name: Install Dependencies & Roothide Theos
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential clang git perl wget unar
+        sudo apt-get install -y build-essential clang git perl
         git clone --recursive https://github.com/roothide/theos.git /opt/theos
 
     - name: Download iOS SDK
       run: |
-        curl -LO https://github.com/theos/sdks/releases/download/v16.5/iPhoneOS16.5.sdk.tar.xz
-        tar -xf iPhoneOS16.5.sdk.tar.xz
-        mv iPhoneOS16.5.sdk /opt/theos/sdks/
-        rm iPhoneOS16.5.sdk.tar.xz
+        git clone --depth 1 https://github.com/theos/sdks.git /opt/theos/sdks
 
     - name: Build Package
       run: |
