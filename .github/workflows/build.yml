@@ -16,7 +16,7 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Install System Dependencies & Clang
+    - name: Install System Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential clang llvm lld git perl wget unar
@@ -30,12 +30,14 @@ jobs:
         rm -rf /opt/theos/sdks
         git clone --depth 1 https://github.com/theos/sdks.git /opt/theos/sdks
 
-    - name: Link System Clang to Theos Toolchain
+    - name: Setup Toolchain Linker
       run: |
         mkdir -p /opt/theos/toolchain/linux/iphone/bin
-        ln -s $(which clang) /opt/theos/toolchain/linux/iphone/bin/clang
-        ln -s $(which clang++) /opt/theos/toolchain/linux/iphone/bin/clang++
-        ln -s $(which ld.lld) /opt/theos/toolchain/linux/iphone/bin/ld
+        ln -sf $(which clang) /opt/theos/toolchain/linux/iphone/bin/clang
+        ln -sf $(which clang++) /opt/theos/toolchain/linux/iphone/bin/clang++
+        curl -LO https://raw.githubusercontent.com/roothide/theos/master/toolchain/linux/iphone/bin/ldid
+        chmod +x ldid
+        mv ldid /opt/theos/toolchain/linux/iphone/bin/
 
     - name: Build Package
       run: |
