@@ -1,0 +1,32 @@
+name: Build FaceID2D Tweak
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Setup Theos
+      run: |
+        git clone --recursive https://github.com/theos/theos.git $HOME/theos
+        echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+
+    - name: Build Package
+      run: |
+        make clean package THEOS_PACKAGE_SCHEME=rootless
+
+    - name: Upload .deb Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: FaceID2D-deb
+        path: packages/*.deb
+
