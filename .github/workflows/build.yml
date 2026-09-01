@@ -22,8 +22,9 @@ jobs:
         sudo apt-get install -y build-essential clang git perl
         git clone --recursive https://github.com/roothide/theos.git /opt/theos
 
-    - name: Download iOS SDK
+    - name: Setup iOS SDK
       run: |
+        rm -rf /opt/theos/sdks
         git clone --depth 1 https://github.com/theos/sdks.git /opt/theos/sdks
 
     - name: Build Package
