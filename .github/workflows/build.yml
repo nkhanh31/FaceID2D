@@ -19,13 +19,20 @@ jobs:
     - name: Install Dependencies & Roothide Theos
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential clang git perl
+        sudo apt-get install -y build-essential clang git perl wget
         git clone --recursive https://github.com/roothide/theos.git /opt/theos
 
     - name: Setup iOS SDK
       run: |
         rm -rf /opt/theos/sdks
         git clone --depth 1 https://github.com/theos/sdks.git /opt/theos/sdks
+
+    - name: Setup Toolchain
+      run: |
+        mkdir -p /opt/theos/toolchain/linux/iphone
+        curl -LO https://github.com/sbingner/llvm-project/releases/download/v10.0.0-1/linux-ios-arm64e-clang-10.0.0-1.tar.lzma
+        tar -xf linux-ios-arm64e-clang-10.0.0-1.tar.lzma -C /opt/theos/toolchain/linux/iphone
+        rm linux-ios-arm64e-clang-10.0.0-1.tar.lzma
 
     - name: Build Package
       run: |
