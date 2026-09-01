@@ -30,9 +30,13 @@ jobs:
         rm -rf /opt/theos/sdks
         git clone --depth 1 https://github.com/theos/sdks.git /opt/theos/sdks
 
-    - name: Setup ldid
+    - name: Setup Toolchain Symlinks & ldid
       run: |
+        mkdir -p /opt/theos/toolchain/linux/iphone/bin
         mkdir -p /opt/theos/bin
+        ln -sf $(which clang) /opt/theos/toolchain/linux/iphone/bin/clang
+        ln -sf $(which clang++) /opt/theos/toolchain/linux/iphone/bin/clang++
+        ln -sf $(which ld.lld) /opt/theos/toolchain/linux/iphone/bin/ld
         curl -LO https://raw.githubusercontent.com/roothide/theos/master/bin/ldid
         chmod +x ldid
         mv ldid /opt/theos/bin/
