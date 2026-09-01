@@ -1,9 +1,9 @@
 Package: com.yourname.faceid2d
 Name: FaceID2D
-Depends: mobilesubstrate (>= 0.9.5000), preferenceloader
-Version: 0.0.1
-Architecture: iphoneos-arm64
-Description: 2D Face ID unlock tweak for iOS 16 Dopamine
+Depends: mobilesubstrate, preferenceloader
+Version: 1.0.0
+Architecture: iphoneos-arm64e
+Description: 2D Face Recognition Unlock for iOS 15-16
 Maintainer: nkhanh
 Author: nkhanh
 Section: Tweaks
