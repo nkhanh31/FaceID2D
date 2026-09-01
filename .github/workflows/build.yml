@@ -37,6 +37,7 @@ jobs:
         ln -sf $(which clang) /opt/theos/toolchain/linux/iphone/bin/clang
         ln -sf $(which clang++) /opt/theos/toolchain/linux/iphone/bin/clang++
         ln -sf $(which ld.lld) /opt/theos/toolchain/linux/iphone/bin/ld
+        ln -sf $(which llvm-lipo) /opt/theos/toolchain/linux/iphone/bin/lipo
         curl -LO https://raw.githubusercontent.com/roothide/theos/master/bin/ldid
         chmod +x ldid
         mv ldid /opt/theos/bin/
