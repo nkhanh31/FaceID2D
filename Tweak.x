@@ -50,7 +50,11 @@
     self.captureSession.sessionPreset = AVCaptureSessionPreset640x480;
 
     AVCaptureDevice *frontCamera = nil;
-    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession 
+    discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera]
+    mediaType:AVMediaTypeVideo
+    position:AVCaptureDevicePositionFront];
+NSArray *devices = discoverySession.devices;
     for (AVCaptureDevice *device in devices) {
         if (device.position == AVCaptureDevicePositionFront) {
             frontCamera = device;
