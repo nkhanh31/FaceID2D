@@ -1,16 +1,14 @@
-#import <AudioToolbox/AudioToolbox.h>
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <Vision/Vision.h>
 #import <objc/runtime.h>
 #import <roothide.h>
+#import <AudioToolbox/AudioToolbox.h>
 
+// --- INTERFACES ---
 @interface SBLockScreenManager : NSObject
 + (instancetype)sharedInstance;
 - (BOOL)unlockUIFromSource:(int)source withOptions:(id)options;
-@end
-@interface SBCoverSheetViewController : UIViewController
-- (void)unlockUIFromSource:(int)source withOptions:(id)options;
 @end
 
 @interface CSCoverSheetViewController : UIViewController
@@ -27,6 +25,7 @@
 - (void)stopCameraSession;
 @end
 
+// --- IMPLEMENTATION ---
 @implementation FaceID2DManager
 
 + (instancetype)sharedManager {
@@ -56,10 +55,10 @@
 
     AVCaptureDevice *frontCamera = nil;
     AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession 
-    discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera]
-    mediaType:AVMediaTypeVideo
-    position:AVCaptureDevicePositionFront];
-NSArray *devices = discoverySession.devices;
+        discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera]
+        mediaType:AVMediaTypeVideo
+        position:AVCaptureDevicePositionFront];
+    NSArray *devices = discoverySession.devices;
     for (AVCaptureDevice *device in devices) {
         if (device.position == AVCaptureDevicePositionFront) {
             frontCamera = device;
@@ -112,11 +111,15 @@ NSArray *devices = discoverySession.devices;
 
 - (void)stopCameraSession {
     dispatch_async(self.cameraQueue, ^{
-        if (self.captureSession && self.captureSession.isRunning) {
-            [self.captureSession stopRunning];
-            NSLog(@"[FaceID2D] Camera session stopped.");
-        }
+        [self stopCameraSessionBlock];
     });
+}
+
+- (void)stopCameraSessionBlock {
+    if (self.captureSession && self.captureSession.isRunning) {
+        [self.captureSession stopRunning];
+        NSLog(@"[FaceID2D] Camera session stopped.");
+    }
 }
 
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
@@ -151,41 +154,36 @@ NSArray *devices = discoverySession.devices;
 
 - (void)triggerUnlock {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self stopCameraSession];
-        
+        [self stopCameraSessionBlock];
         SBLockScreenManager *lockManager = [NSClassFromString(@"SBLockScreenManager") sharedInstance];
         if (lockManager && [lockManager respondsToSelector:@selector(unlockUIFromSource:withOptions:)]) {
             [lockManager unlockUIFromSource:0 withOptions:nil];
             NSLog(@"[FaceID2D] Unlocked via SBLockScreenManager successfully!");
-        } else {
-            NSLog(@"[FaceID2D] Failed to find SBLockScreenManager or unlock method.");
         }
-        
         self.isProcessingFrame = NO;
     });
 }
+
+@end 
 
 %hook CSCoverSheetViewController
 
 - (void)viewDidAppear:(BOOL)animated {
     %orig;
+    AudioServicesPlaySystemSound(1520); 
     NSLog(@"[FaceID2D] Lockscreen appeared.");
     [FaceID2DManager sharedManager].currentCoverSheet = self;
     [[FaceID2DManager sharedManager] startCameraSession];
 }
 
-- (void)viewDidAppear:(BOOL)animated {
+- (void)viewWillDisappear:(BOOL)animated {
     %orig;
-    AudioServicesPlaySystemSound(1520);
-    NSLog(@"[FaceID2D] Lockscreen appeared.");
-    [FaceID2DManager sharedManager].currentCoverSheet = self;
-    [[FaceID2DManager sharedManager] startCameraSession];
+    NSLog(@"[FaceID2D] Lockscreen disappeared.");
+    [[FaceID2DManager sharedManager] stopCameraSession];
 }
 
 %end
 
 %ctor {
     NSLog(@"[FaceID2D] === Tweak loaded into SpringBoard via Roothide! ===");
-    NSString *bundlePath = jbroot(@"/Library/MobileSubstrate/DynamicLibraries/FaceID2D.plist");
-    NSLog(@"[FaceID2D] Roothide plist path: %@", bundlePath);
 }
