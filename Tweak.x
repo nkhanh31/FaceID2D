@@ -1,9 +1,14 @@
+#import <AudioToolbox/AudioToolbox.h>
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <Vision/Vision.h>
 #import <objc/runtime.h>
 #import <roothide.h>
 
+@interface SBLockScreenManager : NSObject
++ (instancetype)sharedInstance;
+- (BOOL)unlockUIFromSource:(int)source withOptions:(id)options;
+@end
 @interface SBCoverSheetViewController : UIViewController
 - (void)unlockUIFromSource:(int)source withOptions:(id)options;
 @end
@@ -147,17 +152,18 @@ NSArray *devices = discoverySession.devices;
 - (void)triggerUnlock {
     dispatch_async(dispatch_get_main_queue(), ^{
         [self stopCameraSession];
-        if (self.currentCoverSheet) {
-            if ([self.currentCoverSheet respondsToSelector:@selector(unlockUIFromSource:withOptions:)]) {
-                [(SBCoverSheetViewController *)self.currentCoverSheet unlockUIFromSource:0 withOptions:nil];
-                NSLog(@"[FaceID2D] Unlock method called successfully.");
-            }
+        
+        SBLockScreenManager *lockManager = [NSClassFromString(@"SBLockScreenManager") sharedInstance];
+        if (lockManager && [lockManager respondsToSelector:@selector(unlockUIFromSource:withOptions:)]) {
+            [lockManager unlockUIFromSource:0 withOptions:nil];
+            NSLog(@"[FaceID2D] Unlocked via SBLockScreenManager successfully!");
+        } else {
+            NSLog(@"[FaceID2D] Failed to find SBLockScreenManager or unlock method.");
         }
+        
         self.isProcessingFrame = NO;
     });
 }
-
-@end
 
 %hook CSCoverSheetViewController
 
@@ -168,10 +174,12 @@ NSArray *devices = discoverySession.devices;
     [[FaceID2DManager sharedManager] startCameraSession];
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
+- (void)viewDidAppear:(BOOL)animated {
     %orig;
-    NSLog(@"[FaceID2D] Lockscreen disappeared.");
-    [[FaceID2DManager sharedManager] stopCameraSession];
+    AudioServicesPlaySystemSound(1520);
+    NSLog(@"[FaceID2D] Lockscreen appeared.");
+    [FaceID2DManager sharedManager].currentCoverSheet = self;
+    [[FaceID2DManager sharedManager] startCameraSession];
 }
 
 %end
