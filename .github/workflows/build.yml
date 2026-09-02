@@ -19,7 +19,7 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential clang llvm lld git perl wget unar
+        sudo apt-get install -y build-essential clang llvm lld git perl wget unar curl
 
     - name: Setup Roothide Theos
       run: |
@@ -30,15 +30,24 @@ jobs:
         rm -rf /opt/theos/sdks
         git clone --depth 1 https://github.com/theos/sdks.git /opt/theos/sdks
 
-    - name: Setup Toolchain Symlinks & ldid
+    - name: Setup Complete Linux Toolchain & ldid
       run: |
         mkdir -p /opt/theos/toolchain/linux/iphone/bin
         mkdir -p /opt/theos/bin
+        
+        # Link to system clang/lld
         ln -sf $(which clang) /opt/theos/toolchain/linux/iphone/bin/clang
         ln -sf $(which clang++) /opt/theos/toolchain/linux/iphone/bin/clang++
         ln -sf $(which ld.lld) /opt/theos/toolchain/linux/iphone/bin/ld
-        ln -sf $(which llvm-lipo) /opt/theos/toolchain/linux/iphone/bin/lipo
-        ln -sf $(which llvm-strip) /opt/theos/toolchain/linux/iphone/bin/strip
+        
+        # Fallback/Direct symlinks for lipo & strip
+        LIPO_BIN=$(which llvm-lipo-18 || which llvm-lipo-17 || which llvm-lipo-16 || which llvm-lipo || echo "/usr/bin/llvm-lipo")
+        STRIP_BIN=$(which llvm-strip-18 || which llvm-strip-17 || which llvm-strip-16 || which llvm-strip || echo "/usr/bin/llvm-strip")
+        
+        ln -sf $LIPO_BIN /opt/theos/toolchain/linux/iphone/bin/lipo
+        ln -sf $STRIP_BIN /opt/theos/toolchain/linux/iphone/bin/strip
+        
+        # Setup ldid
         curl -LO https://raw.githubusercontent.com/roothide/theos/master/bin/ldid
         chmod +x ldid
         mv ldid /opt/theos/bin/
