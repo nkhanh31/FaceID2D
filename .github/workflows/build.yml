@@ -40,17 +40,17 @@ jobs:
         ln -sf $(which clang++) /opt/theos/toolchain/linux/iphone/bin/clang++
         ln -sf $(which ld.lld) /opt/theos/toolchain/linux/iphone/bin/ld
         
-        # Fallback/Direct symlinks for lipo & strip
+        # Link lipo & strip
         LIPO_BIN=$(which llvm-lipo-18 || which llvm-lipo-17 || which llvm-lipo-16 || which llvm-lipo || echo "/usr/bin/llvm-lipo")
         STRIP_BIN=$(which llvm-strip-18 || which llvm-strip-17 || which llvm-strip-16 || which llvm-strip || echo "/usr/bin/llvm-strip")
         
         ln -sf $LIPO_BIN /opt/theos/toolchain/linux/iphone/bin/lipo
         ln -sf $STRIP_BIN /opt/theos/toolchain/linux/iphone/bin/strip
         
-        # Setup ldid
-        curl -LO https://raw.githubusercontent.com/roothide/theos/master/bin/ldid
-        chmod +x ldid
-        mv ldid /opt/theos/bin/
+        # Download working ldid binary directly
+        curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_x86_64
+        chmod +x ldid_linux_x86_64
+        mv ldid_linux_x86_64 /opt/theos/bin/ldid
 
     - name: Build Package
       run: |
